@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Dorks Generator for Bug Bounty</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --yellow-color: #fbbc05;
+            --dark-color: #333;
+            --light-color: #f8f9fa;
+            --border-color: #ddd;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+            
+            /* Light mode colors */
+            --bg-color: #f5f7fa;
+            --card-bg: white;
+            --text-color: #333;
+            --text-muted: #666;
+            --input-bg: white;
+            --border-light: #e4e8f0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1d29;
+            --card-bg: #252836;
+            --text-color: #e4e8f0;
+            --text-muted: #a0a4b8;
+            --input-bg: #2d3142;
+            --border-light: #3a3e52;
+            --border-color: #3a3e52;
+            --light-color: #2d3142;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3367d6 100%);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            position: relative;
+        }
+        
+        .header-text {
+            flex: 1;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50px;
+            width: 60px;
+            height: 30px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            transition: background 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .toggle-slider {
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            transition: transform 0.3s;
+        }
+        
+        [data-theme="dark"] .toggle-slider {
+            transform: translateX(30px);
+        }
+        
+        .theme-icon {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .sun-icon {
+            margin-right: 5px;
+        }
+        
+        .moon-icon {
+            margin-left: 5px;
+        }
+        
+        .input-section {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .input-section:hover {
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-color);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+            outline: none;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: var(--light-color);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .radio-option:hover {
+            background: var(--border-light);
+        }
+        
+        .radio-option input[type="radio"] {
+            accent-color: var(--primary-color);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3367d6 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 133, 244, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results-section {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .results-section:hover {
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .results-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #2d9247 100%);
+            box-shadow: 0 4px 6px rgba(52, 168, 83, 0.3);
+        }
+        
+        .copy-btn:hover {
+            box-shadow: 0 6px 12px rgba(52, 168, 83, 0.4);
+        }
+        
+        .dorks-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            padding: 20px;
+            background-color: var(--light-color);
+        }
+        
+        .dork-category {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .dork-category:last-child {
+            border-bottom: none;
+        }
+        
+        .category-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-color);
+            display: inline-block;
+        }
+        
+        .dork-item {
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+        
+        .dork-item::before {
+            content: "🔍";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .dork-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--yellow-color);
+        }
+        
+        .dork-item:hover::before {
+            opacity: 1;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .disclaimer {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: #856404;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .disclaimer {
+            background: linear-gradient(135deg, #3a2e00 0%, #5a4a00 100%);
+            border: 1px solid #5a4a00;
+            color: #ffd351;
+        }
+        
+        .attribution {
+            margin-top: 15px;
+            font-size: 1rem;
+        }
+        
+        .attribution a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .attribution a:hover {
+            color: #3367d6;
+            text-decoration: underline;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--light-color);
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Scrollbar styling */
+        .dorks-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .dorks-container::-webkit-scrollbar-track {
+            background: var(--light-color);
+            border-radius: 10px;
+        }
+        
+        .dorks-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .dorks-container::-webkit-scrollbar-thumb:hover {
+            background: #3367d6;
+        }
+        
+        /* Animation for the generate button */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Google Dorks Generator</h1>
+                    <p class="subtitle">Create targeted Google search queries for bug bounty hunting</p>
+                </div>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                    <span class="theme-icon sun-icon">☀️</span>
+                    <span class="toggle-slider"></span>
+                    <span class="theme-icon moon-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+        
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This tool is for educational and authorized security testing purposes only. Only use on domains you have permission to test.
+        </div>
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label for="target-domain">Target Domain</label>
+                <input type="text" id="target-domain" placeholder="example.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Domain Type</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="wildcard" name="domain-type" value="wildcard" checked>
+                        <label for="wildcard">Wildcard (*.example.com)</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="single" name="domain-type" value="single">
+                        <label for="single">Single Domain (example.com)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="generate-btn" class="pulse">
+                <span>Generate Dorks</span>
+            </button>
+        </div>
+        
+        <div class="results-section" id="results-section" style="display: none;">
+            <div class="results-header">
+                <h2>Generated Google Dorks</h2>
+                <button class="copy-btn" id="copy-btn">
+                    <span>Copy All Dorks</span>
+                </button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-dorks">0</div>
+                    <div class="stat-label">Total Dorks</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-categories">0</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+            </div>
+            
+            <div class="dorks-container" id="dorks-container">
+                <!-- Dorks will be inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Created for Bug Bounty Hunters & Security Researchers</p>
+        <div class="attribution">
+            Made by <a href="https://instagram.com/bugatsec" target="_blank">@bugatsec</a> (Ranveer)
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generate-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const resultsSection = document.getElementById('results-section');
+            const dorksContainer = document.getElementById('dorks-container');
+            const totalDorksElement = document.getElementById('total-dorks');
+            const totalCategoriesElement = document.getElementById('total-categories');
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Check for saved theme preference or respect OS preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+            
+            generateBtn.addEventListener('click', generateDorks);
+            copyBtn.addEventListener('click', copyAllDorks);
+            
+            function generateDorks() {
+                const targetDomain = document.getElementById('target-domain').value.trim();
+                const domainType = document.querySelector('input[name="domain-type"]:checked').value;
+                
+                if (!targetDomain) {
+                    alert('Please enter a target domain');
+                    return;
+                }
+                
+                // Clear previous results
+                dorksContainer.innerHTML = '';
+                
+                // Generate dorks based on domain type
+                const domainPrefix = domainType === 'wildcard' ? `*.${targetDomain}` : targetDomain;
+                
+                // Define dork categories and queries
+                const dorkCategories = [
+                    {
+                        title: "Directory Listings & File Indexes",
+                        dorks: [
+                            `site:${domainPrefix} intitle:index.of`,
+                            `site:${domainPrefix} intext:"Index of /"`,
+                            `site:${domainPrefix} intitle:"Index of /" "config" OR "backup" OR "uploads" OR "db"`,
+                            `site:${domainPrefix} intext:"Index of /" "wp-content/uploads"`,
+                            `site:${domainPrefix} intitle:"Index of" ".env" OR ".git"`,
+                            `site:${domainPrefix} intext:"index of" -intext:"Index of /icons"`
+                        ]
+                    },
+                    {
+                        title: "Configuration Files",
+                        dorks: [
+                            `site:${domainPrefix} ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini`,
+                            `site:${domainPrefix} filetype:config "apache"`,
+                            `site:${domainPrefix} filetype:env "DB_PASSWORD" OR "DATABASE_URL"`,
+                            `site:${domainPrefix} filetype:env "AWS_SECRET_ACCESS_KEY" OR "AWS_ACCESS_KEY_ID"`,
+                            `site:${domainPrefix} filetype:env "PRIVATE KEY" OR "SECRET_KEY"`,
+                            `site:${domainPrefix} filetype:env "MAIL_PASSWORD" OR "SMTP_PASSWORD"`,
+                            `site:${domainPrefix} filetype:conf "password=" OR "passwd="`,
+                            `site:${domainPrefix} filetype:properties "secret" OR "password"`,
+                            `site:${domainPrefix} filetype:ini "password" OR "username"`,
+                            `site:${domainPrefix} filetype:yaml "secret" OR "api_key" OR "token"`,
+                            `site:${domainPrefix} filetype:json "api_key" OR "access_token" OR "secret"`,
+                            `site:${domainPrefix} filetype:toml "token" OR "password"`,
+                            `site:${domainPrefix} filetype:env intext:"KEY="`,
+                            `site:${domainPrefix} ext:env`,
+                            `site:${domainPrefix} inurl:/.env`,
+                            `site:${domainPrefix} intitle:".env" "DB_"`,
+                            `site:${domainPrefix} filetype:ini "DB_PASSWORD"`,
+                            `site:${domainPrefix} inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config`
+                        ]
+                    },
+                    {
+                        title: "Database Files & SQL",
+                        dorks: [
+                            `site:${domainPrefix} ext:sql | ext:dbf | ext:mdb`,
+                            `site:${domainPrefix} filetype:sql "INSERT INTO" OR "CREATE TABLE" OR "password"`,
+                            `site:${domainPrefix} filetype:sql "phpmyadmin" OR "wp_users"`,
+                            `site:${domainPrefix} filetype:sql "dump" OR "mysqldump"`,
+                            `site:${domainPrefix} filetype:dbf OR filetype:mdb OR filetype:sql "password"`,
+                            `site:${domainPrefix} filetype:db "sqlite" OR "SQLite format"`
+                        ]
+                    },
+                    {
+                        title: "WordPress Specific",
+                        dorks: [
+                            `site:${domainPrefix} inurl:wp- | inurl:wp-content | inurl:plugins | inurl:uploads | inurl:themes | inurl:download`,
+                            `site:${domainPrefix} inurl:wp-content | inurl:wp-includes`,
+                            `site:${domainPrefix} intext:"WordPress database error"`
+                        ]
+                    },
+                    {
+                        title: "Log Files",
+                        dorks: [
+                            `site:${domainPrefix} ext:log`,
+                            `site:${domainPrefix} filetype:log "password" OR "username"`,
+                            `site:${domainPrefix} filetype:log "token" OR "access_token" OR "refresh_token"`,
+                            `site:${domainPrefix} inurl:"/error" filetype:log`
+                        ]
+                    },
+                    {
+                        title: "Backup & Archive Files",
+                        dorks: [
+                            `site:${domainPrefix} ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup`,
+                            `site:${domainPrefix} intitle:"index of" backup`,
+                            `site:${domainPrefix} intitle:"index of" "backup" | "backups" | "old" | "archive"`,
+                            `site:${domainPrefix} filetype:bkf | filetype:bak | filetype:backup ext:zip`,
+                            `site:${domainPrefix} inurl:backup.zip OR backup.rar`,
+                            `site:${domainPrefix} filetype:tar.gz "backup"`
+                        ]
+                    },
+                    {
+                        title: "Login Panels & Authentication",
+                        dorks: [
+                            `site:${domainPrefix} inurl:login | inurl:signin | intitle:Login | intitle:signin | inurl:auth`,
+                            `site:${domainPrefix} intext:"login" | intitle:"login" | inurl:"login" | intext:"username" | intitle:"username" | inurl:"username" | intext:"password" | intitle:"password" | inurl:"password"`,
+                            `site:${domainPrefix} inurl:admin login OR inurl:administrator`,
+                            `site:${domainPrefix} intitle:"Admin Login" OR intitle:"Administration"`,
+                            `site:${domainPrefix} inurl:login.asp OR inurl:login.php OR inurl:signin`,
+                            `site:${domainPrefix} inurl:panel OR inurl:dashboard`,
+                            `site:${domainPrefix} inurl:manage OR inurl:management`,
+                            `site:${domainPrefix} intitle:signup | intitle:register | intext:signup | intext:"sign up" | intext:register | intext:username | inurl:signup | inurl:register`
+                        ]
+                    },
+                    {
+                        title: "SQL Errors & Debug Information",
+                        dorks: [
+                            `site:${domainPrefix} intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()"`,
+                            `site:${domainPrefix} intext:"Stack trace" OR intext:"Exception in thread"`,
+                            `site:${domainPrefix} intext:"Fatal error" "on line" filetype:php`,
+                            `site:${domainPrefix} intext:"Warning: " "on line"`,
+                            `site:${domainPrefix} intext:"Traceback (most recent call last)" filetype:log`,
+                            `site:${domainPrefix} intext:"ORA-00933" OR "SQLException"`,
+                            `site:${domainPrefix} intext:"Joomla! - Fatal error"`
+                        ]
+                    },
+                    {
+                        title: "Documents & Office Files",
+                        dorks: [
+                            `site:${domainPrefix} ext:doc | ext:docx | ext:odt | ext:pdf | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:csv`,
+                            `site:${domainPrefix} filetype:pdf intext:"Confidential" OR "Internal Use Only"`,
+                            `site:${domainPrefix} filetype:xls OR filetype:xlsx intext:"password" OR "user" OR "email"`,
+                            `site:${domainPrefix} filetype:ppt "Confidential" OR "Internal"`,
+                            `site:${domainPrefix} filetype:doc "secret" OR "internal"`,
+                            `site:${domainPrefix} filetype:pdf "security assessment" OR "vulnerability"`
+                        ]
+                    },
+                    {
+                        title: "Git & Source Control Exposure",
+                        dorks: [
+                            `site:${domainPrefix} inurl:"/.git" "index" OR "HEAD"`,
+                            `site:${domainPrefix} intitle:"Index of /" ".git"`,
+                            `site:${domainPrefix} inurl:".git/config"`,
+                            `site:${domainPrefix} inurl:".git/refs" OR inurl:".git/objects"`,
+                            `site:${domainPrefix} inurl:"/.git" -github`,
+                            `site:${domainPrefix} filetype:patch`,
+                            `site:${domainPrefix} filetype:diff intext:"@@"`,
+                            `site:${domainPrefix} intext:"git clone" "https://"`
+                        ]
+                    },
+                    {
+                        title: "API Endpoints & Documentation",
+                        dorks: [
+                            `site:${domainPrefix} inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer`,
+                            `site:${domainPrefix} inurl:api | inurl:rest | inurl:v1 | inurl:v2 | inurl:v3`,
+                            `site:${domainPrefix} inurl:"/api/" "key" OR "token"`,
+                            `site:${domainPrefix} inurl:"/wp-json/" OR inurl:"/api/v2/"`,
+                            `site:${domainPrefix} filetype:json "client_id" OR "client_secret"`,
+                            `site:${domainPrefix} filetype:wsdl | filetype:WSDL | ext:svc | inurl:wsdl | Filetype: ?wsdl | inurl:asmx?wsdl | inurl:jws?wsdl | intitle:_vti_bin/sites.asmx?wsdl | inurl:_vti_bin/sites.asmx?wsdl`
+                        ]
+                    },
+                    {
+                        title: "Keys, Tokens & Secrets",
+                        dorks: [
+                            `site:${domainPrefix} filetype:txt "PRIVATE KEY" OR "BEGIN RSA PRIVATE KEY"`,
+                            `site:${domainPrefix} intext:"-----BEGIN RSA PRIVATE KEY-----"`,
+                            `site:${domainPrefix} filetype:key "PRIVATE KEY" OR "BEGIN PRIVATE KEY"`,
+                            `site:${domainPrefix} intext:"ghp_"`,
+                            `site:${domainPrefix} intext:"xoxp-" OR intext:"xoxb-"`,
+                            `site:${domainPrefix} intext:"firebase" "apiKey" filetype:json`,
+                            `site:${domainPrefix} intext:"docker login" "username" OR "password"`,
+                            `site:${domainPrefix} intext:"Bearer " filetype:txt OR filetype:log`,
+                            `site:${domainPrefix} intext:"Authorization: Basic" filetype:txt OR filetype:log`
+                        ]
+                    },
+                    {
+                        title: "Admin Panels & Management Consoles",
+                        dorks: [
+                            `site:${domainPrefix} intitle:"phpMyAdmin" OR inurl:phpmyadmin`,
+                            `site:${domainPrefix} intitle:"pgAdmin" OR inurl:pgadmin`,
+                            `site:${domainPrefix} inurl:mongodb "php"`,
+                            `site:${domainPrefix} inurl:"/dbconsole" OR inurl:"/admin/db"`,
+                            `site:${domainPrefix} intitle:"Webmin" OR inurl:webmin`,
+                            `site:${domainPrefix} inurl:"/manager/html" "Tomcat"`,
+                            `site:${domainPrefix} inurl:solr/admin OR intitle:"Solr Admin"`,
+                            `site:${domainPrefix} inurl:kibana OR inurl:elasticsearch`,
+                            `site:${domainPrefix} inurl:jenkins/login OR intitle:"Jenkins"`,
+                            `site:${domainPrefix} inurl:gitlab/login OR intitle:"Sign in · GitLab"`,
+                            `site:${domainPrefix} intitle:"phpPgAdmin" OR intitle:"phpMyAdmin"`,
+                            `site:${domainPrefix} intitle:"ASP.NET" "login"`,
+                            `site:${domainPrefix} intitle:"ColdFusion" "administrator"`,
+                            `site:${domainPrefix} intitle:"Exchange" "Outlook Web Access"`
+                        ]
+                    },
+                    {
+                        title: "Development & Debug Files",
+                        dorks: [
+                            `site:${domainPrefix} ext:php intitle:phpinfo 'published by the PHP Group'`,
+                            `site:${domainPrefix} inurl:"/phpinfo.php"`,
+                            `site:${domainPrefix} inurl:"/server-status"`,
+                            `site:${domainPrefix} inurl:"/phpinfo.php" | inurl:".htaccess"`,
+                            `site:${domainPrefix} inurl:shell | inurl:backdoor | inurl:wso | inurl:cmd | shadow | passwd | boot.ini | inurl:backdoor`,
+                            `site:${domainPrefix} inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http`,
+                            `site:${domainPrefix} inurl:debug | inurl:trace | inurl:"/console"`
+                        ]
+                    },
+                    {
+                        title: "CI/CD & Build Systems",
+                        dorks: [
+                            `site:${domainPrefix} inurl:ci OR inurl:jenkins OR inurl:cicd`,
+                            `site:${domainPrefix} inurl:circleci OR inurl:travis-ci OR inurl:github/workflows`,
+                            `site:${domainPrefix} inurl:".gitlab-ci.yml" intext:"variables" OR "CI_JOB_TOKEN"`,
+                            `site:${domainPrefix} filetype:yml "secrets" OR "token" inurl:".github/workflows"`,
+                            `site:${domainPrefix} inurl:artifact OR inurl:artifacts "download"`,
+                            `site:${domainPrefix} filetype:zip "build" OR "artifact"`
+                        ]
+                    },
+                    {
+                        title: "Form Discovery",
+                        dorks: [
+                            `site:${domainPrefix} intext:"first name" | intext:firstname | intext:submit | intext:contact | intext:"Is this article helpful" | intext:feedback | intext:"Demo Request"`,
+                            `site:${domainPrefix} intitle:submit | intitle:contact | intitle:submit | intitle:feedback | intitle:survey | intitle:form | intitle:"fill up"`,
+                            `site:${domainPrefix} inurl:contact | inurl:feedback | inurl:survey | inurl:form`,
+                            `site:${domainPrefix} intitle:contact | intext:"contact us" | intext:survey | intitle:survey`
+                        ]
+                    },
+                    {
+                        title: "IoT & Camera Systems",
+                        dorks: [
+                            `site:${domainPrefix} intitle:"Live View / - AXIS" OR "ViewerFrame?Mode="`,
+                            `site:${domainPrefix} inurl:"/view/index.shtml" OR inurl:"/axis-cgi"`,
+                            `site:${domainPrefix} inurl:"/cgi-bin/guestimage.html" OR "netcam"`,
+                            `site:${domainPrefix} intitle:"IP Camera" intext:"/video.cgi"`
+                        ]
+                    },
+                    {
+                        title: "Software Version Disclosure",
+                        dorks: [
+                            `site:${domainPrefix} intext:"Apache/2.4." OR intext:"nginx/"`,
+                            `site:${domainPrefix} intext:"Apache/2.4."] OR intext:"nginx/"`
+                        ]
+                    },
+                    {
+                        title: "Application Specific",
+                        dorks: [
+                            `site:${domainPrefix} ext:action | ext:struts | ext:do`,
+                            `site:${domainPrefix} inurl:"/_next/data" intext:"/api/"`,
+                            `site:${domainPrefix} inurl:swf`
+                        ]
+                    },
+                    {
+                        title: "Kubernetes & Container",
+                        dorks: [
+                            `site:${domainPrefix} filetype:yml "kubeconfig" OR "kubernetes"`,
+                            `site:${domainPrefix} filetype:yaml "kind: Secret" OR "apiVersion: v1" "data:"`,
+                            `site:${domainPrefix} intext:"kubeconfig" filetype:txt`,
+                            `site:${domainPrefix} filetype:yaml "imagePullSecrets" OR "token"`
+                        ]
+                    },
+                    {
+                        title: "Compound & Advanced Dorks",
+                        dorks: [
+                            `site:${domainPrefix} (filetype:env OR filetype:sql OR filetype:log OR filetype:bak OR inurl:".git")`,
+                            `site:${domainPrefix} (inurl:admin OR inurl:login OR intitle:"dashboard" OR intitle:"admin")`,
+                            `site:${domainPrefix} ("AWS_SECRET_ACCESS_KEY" OR "BEGIN RSA PRIVATE KEY" OR "DB_PASSWORD" OR "git/")`,
+                            `site:${domainPrefix} filetype:pdf "password" OR "credentials" -site:google.com`
+                        ]
+                    },
+                    {
+                        title: "Third-Party Code Exposure (External Sites)",
+                        dorks: [
+                            `site:http://ideone.com | site:http://codebeautify.org | site:http://codeshare.io | site:http://codepen.io | site:http://repl.it | site:http://justpaste.it | site:http://pastebin.com | site:http://jsfiddle.net | site:http://trello.com | site:*.atlassian.net | site:bitbucket.org "${targetDomain}"`,
+                            `site:pastebin.com "${targetDomain}"`,
+                            `site:hastebin.com "token" OR "secret" OR "password" "${targetDomain}"`,
+                            `site:github.com "${targetDomain}" "password" OR "API_KEY" OR "AWS_SECRET_ACCESS_KEY"`,
+                            `site:gitlab.com "${targetDomain}" "secret" OR "private_key"`,
+                            `site:stackoverflow.com "${targetDomain}"`,
+                            `site:github.com | site:gitlab.com "${targetDomain}"`,
+                            `site:atlassian.net | site:bitbucket.org "${targetDomain}"`
+                        ]
+                    },
+                    {
+                        title: "Cloud Storage & Buckets (External Sites)",
+                        dorks: [
+                            `site:s3.amazonaws.com "${targetDomain}"`,
+                            `site:storage.googleapis.com "${targetDomain}"`,
+                            `site:blob.core.windows.net "${targetDomain}"`,
+                            `site:amazonaws.com intitle:"index of" "s3" "${targetDomain}"`,
+                            `inurl:"/s3.amazonaws.com/" "${targetDomain}"`,
+                            `site:*.digitaloceanspaces.com intext:${targetDomain}`,
+                            `site:digitaloceanspaces.com "${targetDomain}"`,
+                            `site:drive.google.com inurl:"/open" "${targetDomain}"`,
+                            `site:dropbox.com "${targetDomain}" filetype:pdf`,
+                            `intext:"Index of /" "s3" "${targetDomain}"`
+                        ]
+                    }
+                ];
+                
+                // Calculate stats
+                let totalDorks = 0;
+                dorkCategories.forEach(category => {
+                    totalDorks += category.dorks.length;
+                });
+                
+                totalDorksElement.textContent = totalDorks;
+                totalCategoriesElement.textContent = dorkCategories.length;
+                
+                // Render dorks in the container
+                dorkCategories.forEach(category => {
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'dork-category';
+                    
+                    const categoryTitle = document.createElement('h3');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = category.title;
+                    categoryElement.appendChild(categoryTitle);
+                    
+                    category.dorks.forEach(dork => {
+                        const dorkItem = document.createElement('div');
+                        dorkItem.className = 'dork-item';
+                        dorkItem.textContent = dork;
+                        
+                        // Make dork clickable to open Google search in new tab
+                        dorkItem.addEventListener('click', function() {
+                            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(dork)}`;
+                            window.open(searchUrl, '_blank');
+                        });
+                        
+                        categoryElement.appendChild(dorkItem);
+                    });
+                    
+                    dorksContainer.appendChild(categoryElement);
+                });
+                
+                // Show results section
+                resultsSection.style.display = 'block';
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            function copyAllDorks() {
+                const dorkItems = document.querySelectorAll('.dork-item');
+                let allDorks = '';
+                
+                dorkItems.forEach(item => {
+                    allDorks += item.textContent + '\n';
+                });
+                
+                navigator.clipboard.writeText(allDorks)
+                    .then(() => {
+                        // Visual feedback for copy
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<span>Copied!</span>';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                        alert('Failed to copy dorks. Please try again.');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
